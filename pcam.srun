@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --partition=bgmp        	### Partition (like a queue in PBS)
+#SBATCH --job-name=PCam_ML          ### Job Name
+#SBATCH --output=PCam_ML-%j.log ### File in which to store job output
+#SBATCH --error=PCam_ML-%j.err  ### File in which to store job error messages
+#SBATCH --time=0-20:00:00       	### Wall clock time limit in Days-HH:MM:SS
+#SBATCH --nodes=1               	### Number of nodes needed for the job
+#SBATCH --cpus-per-task=1       	### Number of CPUs to be used per task
+#SBATCH --account=bgmp          	### Account used for job submission
+#SBATCH --mail-user=angela.crabtree.88@gmail.com    ### email for job submission notifications
+#SBATCH --mail-type=ALL         	### specifies types of notification emails to send
+
+## files (downloaded from )
+x="camelyonpatch_level_2_split_valid_x.h5.gz"
+y="camelyonpatch_level_2_split_valid_y.h5.gz"
+tile_dir="/projects/bgmp/acrabtre/night/ngsci/project/angela/tiles/pcam"
+tile_labels="/projects/bgmp/acrabtre/night/ngsci/project/angela/tiles/pcam/camelyonpatch_level_2_split_valid_y.csv"
+annotations="/projects/bgmp/acrabtre/night/ngsci/project/angela/output/tile_annot.csv"
+dataloader="/projects/bgmp/acrabtre/night/ngsci/project/angela/tiles/pcam/pcam_dataloader.pth"
+tumor_model="/projects/bgmp/acrabtre/night/ngsci/project/angela/output/tumor_vgg16_v1.pth"
+
+# ## run hdf5 extraction python script
+# /usr/bin/time -v scripts/extract_h5_img.py \
+#     -x $x \
+#     -y $y
+
+# ## make sure the annotations are in the right format (esp if not all tiles from h5 got generated)
+# scripts/pcam_img_list.py \
+#     -i $tile_dir \
+#     -L $tile_labels \
+#     -o $annotations
+
+# ## save PCam tiles into pytorch DataLoader
+# /usr/bin/time -v scripts/pcam_dload.py \
+#     -a $annotations \
+#     -o $dataloader
+
+## use DataLoader to train model
+/usr/bin/time -v scripts/pcam_dload.py \
+    -d $dataloader \
+    -o $tumor_model
